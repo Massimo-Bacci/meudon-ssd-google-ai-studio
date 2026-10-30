@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "Game": {
+      "title": "Game",
+      "description": "Represents a weekly 5-a-side football game session with scheduling, venue, and payment settings.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the game" },
+        "title": { "type": "string", "description": "Display title of the game" },
+        "date": { "type": "string", "description": "ISO date format YYYY-MM-DD" },
+        "startTime": { "type": "string", "description": "Start time e.g. 10:00" },
+        "endTime": { "type": "string", "description": "End time e.g. 11:30" },
+        "field": { "type": "string", "description": "Venue name and address" },
+        "terrain": { "type": "string", "description": "Pitch number e.g. Terrain 3" },
+        "fieldMapUrl": { "type": "string", "description": "Google Maps link to venue" },
+        "pricePerPlayer": { "type": "number", "description": "Price per person in euros" },
+        "currency": { "type": "string", "description": "Currency symbol or code" },
+        "paypalLink": { "type": "string", "description": "Organizer PayPal payment link" },
+        "revolutLink": { "type": "string", "description": "Organizer Revolut payment link" },
+        "allowCash": { "type": "boolean", "description": "Whether cash payment in hand is permitted" },
+        "organizerPin": { "type": "string", "description": "Secret PIN used by organizer to edit game" },
+        "whatsappGroupUrl": { "type": "string", "description": "Optional WhatsApp group invite link" },
+        "status": { "type": "string", "enum": ["open", "closed", "completed"], "description": "Game status" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last update timestamp" }
+      },
+      "required": ["title", "date", "startTime", "endTime", "field", "allowCash", "organizerPin", "status"]
+    },
+    "Player": {
+      "title": "Player",
+      "description": "A player registered for a game or on the waiting list.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for player registration" },
+        "gameId": { "type": "string", "description": "ID of the game" },
+        "name": { "type": "string", "description": "Player full name or nickname", "minLength": 2, "maxLength": 50 },
+        "paymentMethod": { "type": "string", "enum": ["paypal", "revolut", "cash", "none"], "description": "Selected payment method" },
+        "paymentStatus": { "type": "string", "enum": ["paid", "pending", "exempt"], "description": "Status of payment" },
+        "isWaitingList": { "type": "boolean", "description": "True if player is on the waiting list" },
+        "team": { "type": "string", "enum": ["A", "B", "unassigned"], "description": "Team assignment (5v5)" },
+        "order": { "type": "number", "description": "Order of registration" },
+        "createdAt": { "type": "string", "description": "Timestamp of registration" }
+      },
+      "required": ["gameId", "name", "paymentMethod", "paymentStatus", "isWaitingList", "order"]
+    },
+    "RefundRequest": {
+      "title": "RefundRequest",
+      "description": "Refund request filed when a paid player cancels their registration.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique refund request identifier" },
+        "gameId": { "type": "string", "description": "ID of the game" },
+        "playerId": { "type": "string", "description": "ID of the player" },
+        "playerName": { "type": "string", "description": "Player name", "minLength": 1, "maxLength": 60 },
+        "amount": { "type": "number", "description": "Refund amount" },
+        "currency": { "type": "string", "description": "Currency symbol", "maxLength": 10 },
+        "originalPaymentMethod": { "type": "string", "enum": ["paypal", "revolut", "cash", "none"] },
+        "refundMethod": { "type": "string", "enum": ["paypal", "revolut"] },
+        "refundHandle": { "type": "string", "description": "PayPal tag or Revolut handle", "minLength": 1, "maxLength": 150 },
+        "status": { "type": "string", "enum": ["pending", "completed"] },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "refundedAt": { "type": "string", "description": "Refund completion timestamp" }
+      },
+      "required": ["gameId", "playerId", "playerName", "amount", "currency", "refundMethod", "refundHandle", "status"]
+    }
+  },
+  "firestore": {
+    "/games/{gameId}": {
+      "schema": { "$ref": "#/entities/Game" },
+      "description": "Collection of football games"
+    },
+    "/games/{gameId}/players/{playerId}": {
+      "schema": { "$ref": "#/entities/Player" },
+      "description": "Subcollection of players subscribed to or waiting for a specific game"
+    },
+    "/games/{gameId}/refunds/{refundId}": {
+      "schema": { "$ref": "#/entities/RefundRequest" },
+      "description": "Subcollection of refund requests for players who cancelled after paying"
+    }
+  }
+}

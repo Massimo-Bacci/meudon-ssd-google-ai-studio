@@ -1,0 +1,6 @@
+{
+  "name": "Meudon, stars du dimanche",
+  "description": "Application pour organiser les matchs hebdomadaires de foot à 5 du dimanche à Meudon : gestion des inscriptions (10 joueurs max), liste d'attente, paiements PayPal/Revolut/Cash et alertes WhatsApp automatiques.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

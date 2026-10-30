@@ -1,0 +1,70 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    function isValidGame(data) {
+      return data.title is string && data.title.size() <= 100
+        && data.date is string && data.date.size() <= 20
+        && data.startTime is string && data.startTime.size() <= 10
+        && data.endTime is string && data.endTime.size() <= 10
+        && data.field is string && data.field.size() <= 200
+        && data.get('terrain', '') is string && data.get('terrain', '').size() <= 100
+        && data.allowCash is bool
+        && data.status in ['open', 'closed', 'completed'];
+    }
+
+    function isValidPlayer(data) {
+      return data.gameId is string && data.gameId.size() <= 128
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 60
+        && data.paymentMethod in ['paypal', 'revolut', 'cash', 'none']
+        && data.paymentStatus in ['paid', 'pending', 'exempt']
+        && data.isWaitingList is bool
+        && data.order is number;
+    }
+
+    function isValidRefund(data) {
+      return data.gameId is string && data.gameId.size() <= 128
+        && data.playerId is string && data.playerId.size() <= 128
+        && data.playerName is string && data.playerName.size() >= 1 && data.playerName.size() <= 60
+        && data.amount is number
+        && data.currency is string && data.currency.size() <= 10
+        && data.refundMethod in ['paypal', 'revolut']
+        && data.refundHandle is string && data.refundHandle.size() >= 1 && data.refundHandle.size() <= 150
+        && data.status in ['pending', 'completed'];
+    }
+
+    // Games collection: readable by anyone, modifiable for game setup and administration
+    match /games/{gameId} {
+      allow read: if true;
+      allow create: if isValidId(gameId) && isValidGame(request.resource.data);
+      allow update: if isValidId(gameId) && isValidGame(request.resource.data);
+      allow delete: if isValidId(gameId);
+
+      // Subcollection of players
+      match /players/{playerId} {
+        allow read: if true;
+        allow create: if isValidId(playerId) && isValidPlayer(request.resource.data);
+        allow update: if isValidId(playerId) && isValidPlayer(request.resource.data);
+        allow delete: if isValidId(playerId);
+      }
+
+      // Subcollection of refund requests
+      match /refunds/{refundId} {
+        allow read: if true;
+        allow create: if isValidId(refundId) && isValidRefund(request.resource.data);
+        allow update: if isValidId(refundId) && isValidRefund(request.resource.data);
+        allow delete: if isValidId(refundId);
+      }
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
