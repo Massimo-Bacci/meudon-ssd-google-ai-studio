@@ -10,6 +10,10 @@
 
 ---
 
+**🌐 Accéder à l'application en ligne :** [https://meudon-stars-du-dimanche.ai.studio/](https://meudon-stars-du-dimanche.ai.studio/)
+
+---
+
 ## Table des Matières
 
 1. [Vue d'ensemble du Projet](#1-vue-densemble-du-projet)
